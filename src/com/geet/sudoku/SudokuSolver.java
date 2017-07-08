@@ -26,6 +26,7 @@ public class SudokuSolver {
 		}
 	}
 	public static void main(String[] args) {
+		long start = System.currentTimeMillis();
 		takeInput();
 		isGameOn = true;
 		int traverseCount = 0;
@@ -38,7 +39,7 @@ public class SudokuSolver {
 			traverseBoard();
 			traverseCount++;
 		}
-		
+		System.out.println("Total Execution Time:"+(System.currentTimeMillis()-start)+" ms");
 	}	
 	private static void traverseBoard(){
 		isGameOn = false;
