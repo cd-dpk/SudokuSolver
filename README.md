@@ -3,4 +3,4 @@ This program solves "Sudoku". Sudoku is a logic-based, combinatorial number-plac
 
 The program takes an input of unsolved "Sudoku" and solves the Sudoku. 
 
-<a href="SudokuSolver/Screenshot from 2017-07-08 16:27:27.png"> Screenshot of an execution</a>
+<a href="https://github.com/chandradasdipok/SudokuSolver/blob/master/Screenshot%20from%202017-07-08%2016:27:27.png"> Screenshot of an execution</a>
