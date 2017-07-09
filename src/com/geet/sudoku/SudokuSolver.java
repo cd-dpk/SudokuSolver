@@ -10,21 +10,29 @@ import java.util.StringTokenizer;
  * This program solves 'Sudoku'
  */
 public class SudokuSolver {
-	// Sudoku Board is expressed by 'board'
-	// Sudoku Board's two dimension is expressed by 'board' into three dimensions
-	// Each Cell is an array of boolean
-	// The possible values of cell are stored by an array of boolean
-	// If a cell has exact one 'true', then it is fixed and the value is 'index+1' of 'true'  
-	// 'hand' is an array of all nine '[1-9]' values.
+	// Sudoku Board is expressed by 'board' 
+	// which is 9X9 dimension short array
+	// Bit operation is used to solve the puzzle
+	// We suppose that: 
+	// 9 =~ 0000 0001 0000 0000
+	// 8 =~ 0000 0000 1000 0000
+	// 7 =~ 0000 0000 0100 0000
+	// 6 =~ 0000 0000 0010 0000
+	// 5 =~ 0000 0000 0001 0000
+	// 4 =~ 0000 0000 0000 1000
+	// 3 =~ 0000 0000 0000 0100
+	// 2 =~ 0000 0000 0000 0010
+	// 1 =~ 0000 0000 0000 0001 
+	// Cell value(s) is expressed bits
+	// if a cell value has possible two values (3,5), 
+	// it is expressed by  bitwise or of 3 and 5; it is 0000 0000 0001 0100
+	// if a cell has all possible values of(1...9) then is 0000 0001 1111 1111
+	// 'hand' is an bit expression of  all nine '[1-9]' values.
 
-	static boolean [][][] board= new boolean [9][9][9];
-	static boolean [] hand = new boolean[9];
+	static boolean[][] status = new boolean[9][9];
+	static short [][] board= new short [9][9];
+	static short hand = 511; // denotes 0000 0001 1111 1111
 	static boolean isGameOn = false;
-	static {
-		for (int i = 0; i < hand.length; i++) {
-			hand[i] = true;
-		}
-	}
 	public static void main(String[] args) {
 		long start = System.currentTimeMillis();
 		takeInput();
@@ -45,67 +53,35 @@ public class SudokuSolver {
 		isGameOn = false;
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
-				if (!isFixed(board[i][j])) {
+				if (!status[i][j]) {
 					setPossibleValuesForCell(i, j);
 				}
-				System.out.print(stringOf(board[i][j])+" ");
-				if (!isFixed(board[i][j])) {
+				System.out.print(valueOf(board[i][j])+" ");
+				checkForFix(i, j, board[i][j]);
+				if (!(status[i][j])) {
 					isGameOn = true;
 				}
 			}
 			System.out.println();
 		}
 	}
-
-	private static String stringOf(boolean []data){
-		String str="";
-		for (int i = 0; i < data.length; i++) {
-			if (data[i]) {
-				str+= (i+1)+",";
-			}
+	private static String valueOf(short data){
+		int i=0;
+		while (data!=0) {
+			data >>= 1;
+			i++;
 		}
-		if (str.equals("")) {
-			return "0";
-		}
-		return "["+str+"]";
-		
+		return i+"";
 	}
 	
-	private static boolean[] and(boolean [] data1, boolean [] data2){
-		boolean [] res = new boolean[data1.length];
-		for (int i = 0; i < data1.length && i< data2.length; i++) {
-			res[i] = data1[i] && data2[i];
+	private static void checkForFix(int i, int j, short data){
+		if (data == 1 | data == 2 |data ==4| data == 8 |data==16|data==32|data==64|data==128|data==256) {
+			status[i][j] = true;
+		}else{
+			status[i][j] = false;
 		}
-		return res;
-	} 
-	private static boolean[] or(boolean[] data1, boolean [] data2){
-		boolean [] res = new boolean[data1.length];
-		for (int i = 0; i < data1.length && i< data2.length; i++) {
-				res[i] = data1[i] || data2[i];
-		}
-		return res;		
-	}
-	private static boolean[] diff(boolean[] data1, boolean [] data2){
-		boolean [] res = new boolean[data1.length];
-		for (int i = 0; i < data1.length && i< data2.length; i++) {
-				res[i] = (data1[i]  &&  !data2[i]);
-		}
-		return res;		
 	}
 	
-	private static boolean isFixed(boolean [] data){
-		return (countNoOfValues(data) == 1) ;
-	}
-	
-	private static int countNoOfValues(boolean [] data){
-		int count = 0 ;
-		for (int i = 0; i < data.length; i++) {
-			if (data[i]) {
-				count++;
-			}
-		}
-		return count;
-	}
 	
 	
 	private  static void takeInput(){
@@ -121,13 +97,17 @@ public class SudokuSolver {
 					int token = Integer.parseInt(stringTokenizer.nextToken());
 					System.out.print(token+" ");
 					if (token>=1 && token<=9) {
-						board[i][j][token-1] = true;
+						board[i][j] = (short) Math.pow(2, token-1);
+						status[i][j] = true;
+					}else{
+						board[i][j] = 0;
 					}
 					j++;
 				}
 				System.out.println();
 				i++;
 			}
+			System.out.println("Inputed!");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}finally {
@@ -136,18 +116,18 @@ public class SudokuSolver {
 	}
 	
 	private static void setPossibleValuesForCell(int i, int j){
-		boolean [] flag = new boolean[9];	
+		short  flag = 0x00;	
 		
 		// store all fixed values of row i on flag
 		for (int k = 0; k < 9; k++) {
-				if (isFixed(board[i][k]) && k!=j ) {
-					flag = or(flag, board[i][k]);					
+				if ((status[i][k]) && k!=j ) {
+					flag |= board[i][k];					
 				}
 		}
 		// store all fixed values of column j on flag
 		for (int k = 0; k < 9; k++) {
-				if (isFixed(board[k][j]) && k!=i ) {
-					flag = or(flag, board[k][j]);
+				if ((status[k][j]) && k!=i ) {
+					flag |= board[k][j];
 				}
 		}
 		
@@ -158,8 +138,8 @@ public class SudokuSolver {
 		int initialColIndexOf3X3 = 3*(temp%3);
 		// traverse 3X3 matrix on anti-clock wise
 		// initial position  of Traverse  
-		if (isFixed(board[initialRowIndexOf3X3][initialColIndexOf3X3])) {
-			flag = or(flag, board[initialRowIndexOf3X3][initialColIndexOf3X3]); 			
+		if ((status[initialRowIndexOf3X3][initialColIndexOf3X3])) {
+			flag |= board[initialRowIndexOf3X3][initialColIndexOf3X3]; 			
 		}
 		int counter = 1;
 		while (counter<12) {
@@ -184,17 +164,18 @@ public class SudokuSolver {
 				initialColIndexOf3X3--;
 				//column decrease
 			}
-			if (isFixed(board[initialRowIndexOf3X3][initialColIndexOf3X3])) {
-				flag = or(flag, board[initialRowIndexOf3X3][initialColIndexOf3X3]); 
+			if (status[initialRowIndexOf3X3][initialColIndexOf3X3]) {
+				flag |= board[initialRowIndexOf3X3][initialColIndexOf3X3]; 
 			}
 			counter++;
 		}
 		// center position of 3X3 matrix
-		if (isFixed(board[initialRowIndexOf3X3][initialColIndexOf3X3])) {
-			flag = or(flag, board[initialRowIndexOf3X3][initialColIndexOf3X3]); 		
+		if (status[initialRowIndexOf3X3][initialColIndexOf3X3]) {
+			flag |= board[initialRowIndexOf3X3][initialColIndexOf3X3]; 		
 		}
 		// keep those values whose are in hand but not in flag
-		board[i][j] = diff(hand, flag);
+		//TODO
+		board[i][j] = (short) (hand & ~flag);
 		//board[i][j] = flag;
 	}	
 }
