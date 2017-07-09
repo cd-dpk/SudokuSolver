@@ -75,7 +75,8 @@ public class SudokuSolver {
 	}
 	
 	private static void checkForFix(int i, int j, short data){
-		if (data == 1 | data == 2 |data ==4| data == 8 |data==16|data==32|data==64|data==128|data==256) {
+		if (data == 1 || data == 2 ||data ==4|| data == 8 ||data==16||data==32||data==64||data==128||data==256) {
+			// data == 1 || data == 2 ||data ==3|| data == 4 ||data==5||data==6||data==7||data== 8||data==9
 			status[i][j] = true;
 		}else{
 			status[i][j] = false;
